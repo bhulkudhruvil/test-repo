@@ -21,6 +21,8 @@ parser.add_argument('-t', '--token', nargs='+', help='Please enter token', requi
 args = parser.parse_args()
 folder = args.list
 auth_token = args.token[0]
+src = args.upload[0]
+dst = args.upload[1]
 to_download = args.download
 
 try:
@@ -41,8 +43,8 @@ def get_files(folder):
 
 
 def upload():
-    src = args.upload[0]
-    dst = args.upload[1]
+#    src = args.upload[0]
+#    dst = args.upload[1]
     if os.path.exists(src):
         if os.path.isfile(src):
             path = os.path.abspath(src)
@@ -54,13 +56,36 @@ def upload():
             files = os.listdir(src)
             for each in files:
                 path = os.path.abspath(src+'/'+each)
-                with open(path, 'rb') as f:
-                    client.put_file('/' + dst + '/' + each, f)
-                    print('Uploaded: ' + each + ' ')
+                if os.path.isfile(path):
+                    with open(path, 'rb') as f:
+                        client.put_file('/' + dst + '/' + each, f)
+                        print('Uploaded: ' + each + ' ')
+                else:
+                    subfolder(path)
+                   # subdir = os.listdir(path)
+                   # for a in subdir:
+                   #     path = os.path.abspath(src+'/'+each+'/'+a)
+                   #     print(path)
+                   #     with open(path, 'rb') as f:
+                   #         client.put_file('/' + dst + '/' + each, f)
+                   #         print('Uploaded: ' + a + ' ')
     else:
         print('Source directory does not exists. Please enter proper directory')
         sys.exit(1)
 
+def subfolder(folder):
+    files = os.listdir(folder)
+    for each in files:
+      path = os.path.abspath(folder+'/'+each)
+      #print(path)
+      if os.path.isfile(path):
+        d = path.replace(src,'')
+        final = '/'+dst+'/'+d
+        with open(path, 'rb') as f:
+          client.put_file(final, f)
+          print('Uploaded: ' + each + ' ')
+      else:
+        subfolder(path)
 
 def download():
     print(to_download)
